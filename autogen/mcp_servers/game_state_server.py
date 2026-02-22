@@ -347,7 +347,15 @@ def set_scene(
 
 
 @mcp.tool()
-def set_enemies(game_id: GameId = "", enemies: list[dict] = None, reason: str = "") -> dict:
+def set_enemies(game_id: GameId = "", enemies = None, reason: str = "") -> dict:
+    # Accept a JSON-encoded string (DM sometimes passes stringified list)
+    if isinstance(enemies, str):
+        try:
+            enemies = json.loads(enemies)
+        except Exception:
+            enemies = []
+    if not isinstance(enemies, list):
+        enemies = []
     game_id = _normalize_game_id(game_id)
     with _LOCK:
         db = _load_db()

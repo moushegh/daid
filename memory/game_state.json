@@ -16878,7 +16878,7 @@
       "scene_id": 0,
       "round": 5,
       "turn_index": 5,
-      "state_version": 11,
+      "state_version": 12,
       "last_actor": "",
       "next_actor": "DungeonMaster",
       "party": [],
@@ -16928,10 +16928,19 @@
             "note": "Found a hidden passage leading deeper into the dungeon."
           },
           "timestamp": "2026-02-22T17:17:38.235186+00:00"
+        },
+        {
+          "type": "Initiative Roll",
+          "actor": "Aldric",
+          "outcome": "success",
+          "details": {
+            "note": "rolled a 2 with +5 modifier"
+          },
+          "timestamp": "2026-02-22T20:18:48.111131+00:00"
         }
       ],
       "result": null,
-      "updated_at": "2026-02-22T17:17:53.274948+00:00"
+      "updated_at": "2026-02-22T20:18:48.111142+00:00"
     },
     "2222923f": {
       "game_id": "2222923f",
@@ -19589,13 +19598,13 @@
     },
     "2e24c597": {
       "game_id": "2e24c597",
-      "status": "running",
+      "status": "completed",
       "scene_id": 1,
-      "round": 2,
-      "turn_index": 3,
-      "state_version": 18,
-      "last_actor": "Elara",
-      "next_actor": "Shadow",
+      "round": 5,
+      "turn_index": 2,
+      "state_version": 42,
+      "last_actor": "Thorin",
+      "next_actor": "Elara",
       "party": [
         {
           "name": "Thorin",
@@ -19790,19 +19799,78 @@
         },
         {
           "timestamp": "2026-02-22T20:03:42.140426+00:00"
+        },
+        {
+          "timestamp": "2026-02-22T20:05:05.399710+00:00"
+        },
+        {
+          "type": "scene",
+          "scene_id": 1,
+          "scene_title": "",
+          "narration": "The poison darts have been destroyed.",
+          "timestamp": "2026-02-22T20:07:31.002087+00:00"
+        },
+        {
+          "type": "scene",
+          "scene_id": 1,
+          "scene_title": "",
+          "narration": "The traps have been disabled.",
+          "timestamp": "2026-02-22T20:10:37.970985+00:00"
+        },
+        {
+          "timestamp": "2026-02-22T20:13:34.948289+00:00"
+        },
+        {
+          "timestamp": "2026-02-22T20:16:20.152830+00:00"
+        },
+        {
+          "timestamp": "2026-02-22T20:17:51.940941+00:00"
+        },
+        {
+          "type": "attack",
+          "actor": "Shadow",
+          "outcome": "success",
+          "details": {
+            "note": "rolled 8 with Sneak Attack ability"
+          },
+          "timestamp": "2026-02-22T20:20:58.093092+00:00"
+        },
+        {
+          "type": "attack",
+          "actor": "Thorin",
+          "outcome": "success",
+          "details": {
+            "note": "rolled 10 with Battleaxe ability"
+          },
+          "timestamp": "2026-02-22T20:23:01.450254+00:00"
+        },
+        {
+          "type": "attack",
+          "actor": "Elara",
+          "outcome": "success",
+          "details": {
+            "note": "rolled 8 with Fire Bolt ability"
+          },
+          "timestamp": "2026-02-22T20:24:51.899596+00:00"
+        },
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Historical reconciliation: terminal game state aligned with task status 'interrupted'.",
+          "timestamp": "2026-02-22T20:37:30.465203+00:00"
         }
       ],
-      "result": null,
-      "updated_at": "2026-02-22T20:04:02.480411+00:00"
+      "result": "DEFEAT",
+      "updated_at": "2026-02-22T20:37:30.465224+00:00"
     },
     "e4be9bbd": {
       "game_id": "e4be9bbd",
-      "status": "running",
+      "status": "completed",
       "scene_id": 0,
-      "round": 1,
+      "round": 6,
       "turn_index": 0,
-      "state_version": 1,
-      "last_actor": "",
+      "state_version": 30,
+      "last_actor": "Aldric",
       "next_actor": "DungeonMaster",
       "party": [
         {
@@ -19960,9 +20028,63 @@
       "flags": {
         "adventure": "crypt_of_the_shadow_lord"
       },
-      "event_log": [],
+      "event_log": [
+        {
+          "type": "note",
+          "detail": "discovered ventilation shaft or secret passage",
+          "timestamp": "2026-02-22T20:29:44.505170+00:00"
+        },
+        {
+          "type": "dialogue",
+          "detail": "interrogation",
+          "details": {
+            "note": "Asks figure to explain itself and its intentions"
+          },
+          "timestamp": "2026-02-22T20:33:02.417543+00:00"
+        },
+        {
+          "type": "dialogue",
+          "detail": "interrogation",
+          "details": {
+            "note": "Asks figure for clarification on its role in the Shadow Lord's project"
+          },
+          "timestamp": "2026-02-22T20:34:30.224877+00:00"
+        },
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Historical reconciliation: terminal game state aligned with task status 'interrupted'.",
+          "timestamp": "2026-02-22T20:37:30.493701+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-22T20:37:30.493719+00:00"
+    },
+    "<game_id>": {
+      "game_id": "<game_id>",
+      "status": "new",
+      "scene_id": 0,
+      "round": 0,
+      "turn_index": 0,
+      "state_version": 1,
+      "last_actor": "",
+      "next_actor": "DungeonMaster",
+      "party": [],
+      "enemies": [],
+      "initiative_order": [],
+      "flags": {},
+      "event_log": [
+        {
+          "type": "action",
+          "detail": "Dungeon Master's turn",
+          "details": {
+            "note": "narration of actions taken by Dungeon Master"
+          },
+          "timestamp": "2026-02-22T20:35:42.651007+00:00"
+        }
+      ],
       "result": null,
-      "updated_at": "2026-02-22T20:04:05.115190+00:00"
+      "updated_at": "2026-02-22T20:35:42.651011+00:00"
     }
   }
 }

@@ -160,6 +160,32 @@ class DnDGame:
                 ]
                 _SCENE_THRESHOLD = 8  # rounds per scene before forced advance
                 advance_at = (current_scene + 1) * _SCENE_THRESHOLD
+
+                # Ensure enemies are seeded whenever the scene is non-zero
+                # and the enemies array is empty — handles the case where the
+                # DM called set_scene manually bypassing the auto-advance branch.
+                if current_scene > 0 and not gs.get("enemies"):
+                    try:
+                        if current_scene == 1 and create_skeleton is not None:
+                            sk1 = create_skeleton().to_dict()
+                            sk2 = create_skeleton().to_dict()
+                            sk1["name"] = "Skeleton Guard 1"
+                            sk2["name"] = "Skeleton Guard 2"
+                            execute_text_tool_call("set_enemies", {
+                                "game_id": self.game_id,
+                                "enemies": [sk1, sk2],
+                            })
+                            print(f"[hook] late-seed 2 skeletons (scene {current_scene} had no enemies)")
+                        elif current_scene == 2 and create_shadow_lord is not None:
+                            sl = create_shadow_lord().to_dict()
+                            execute_text_tool_call("set_enemies", {
+                                "game_id": self.game_id,
+                                "enemies": [sl],
+                            })
+                            print(f"[hook] late-seed Shadow Lord (scene {current_scene} had no enemies)")
+                    except Exception as _late_seed_exc:
+                        print(f"[hook] late enemy seed failed: {_late_seed_exc}")
+
                 if current_scene < 2 and current_round > advance_at:
                     next_sid = current_scene + 1
                     title = _SCENE_TITLES[next_sid] if next_sid < len(_SCENE_TITLES) else f"Scene {next_sid}"
