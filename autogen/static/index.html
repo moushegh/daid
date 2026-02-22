@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>D&D AI Adventure</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0d1117;
+    --surface:     #161b22;
+    --border:      #30363d;
+    --text:        #e6edf3;
+    --muted:       #8b949e;
+    --accent:      #58a6ff;
+
+    /* agent colours */
+    --DungeonMaster: #7c3aed;
+    --Thorin:        #d97706;
+    --Elara:         #2563eb;
+    --Shadow:        #16a34a;
+    --Aldric:        #0e7490;
+    --System:        #b91c1c;
+    --Unknown:       #374151;
+
+    --status-pending:   #6b7280;
+    --status-running:   #f59e0b;
+    --status-completed: #10b981;
+    --status-error:     #ef4444;
+  }
+
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ── Layout ── */
+  #app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 280px; min-width: 220px; max-width: 320px;
+    display: flex; flex-direction: column;
+    background: var(--surface); border-right: 1px solid var(--border);
+  }
+  #sidebar-header {
+    padding: 16px; border-bottom: 1px solid var(--border);
+    font-size: 15px; font-weight: 600; color: var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  #sidebar-header svg { flex-shrink: 0; }
+  #sidebar-header span { flex: 1; }
+  #stop-all-btn {
+    padding: 3px 9px; background: transparent; color: #ef4444;
+    border: 1px solid #ef4444; border-radius: 6px; font-size: 11px;
+    font-weight: 600; cursor: pointer; transition: background .15s, color .15s;
+    white-space: nowrap; display: none;
+  }
+  #stop-all-btn:hover { background: #ef4444; color: #fff; }
+  #task-list { flex: 1; overflow-y: auto; }
+  .task-item {
+    padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .task-item:hover  { background: #1f262e; }
+  .task-item.active { background: #1c2a3a; border-left: 3px solid var(--accent); padding-left: 13px; }
+  .task-item-id     { font-size: 10px; color: var(--muted); font-family: monospace; }
+  .task-item-desc   { font-size: 13px; margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-item-meta   { display: flex; align-items: center; gap: 6px; }
+  .status-badge {
+    font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+  .badge-pending      { background: #374151; color: #9ca3af; }
+  .badge-running      { background: #78350f; color: #fcd34d; animation: pulse 1.5s infinite; }
+  .badge-completed    { background: #064e3b; color: #6ee7b7; }
+  .badge-error        { background: #7f1d1d; color: #fca5a5; }
+  .badge-cancelled    { background: #3b1f5e; color: #c4b5fd; }
+  .badge-interrupted  { background: #422006; color: #fdba74; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+  .task-time { font-size: 10px; color: var(--muted); }
+  #empty-sidebar { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* ── Main panel ── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Top bar ── */
+  #topbar {
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px; background: var(--surface);
+    min-height: 56px;
+  }
+  #topbar-title { font-size: 14px; font-weight: 600; flex: 1; }
+  #topbar-desc  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  #topbar-status { flex-shrink: 0; }
+
+  /* ── Agent legend ── */
+  #legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 8px 20px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Feed ── */
+  #feed {
+    flex: 1; overflow-y: auto; padding: 16px 20px 8px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  #feed::-webkit-scrollbar       { width: 6px; }
+  #feed::-webkit-scrollbar-track  { background: transparent; }
+  #feed::-webkit-scrollbar-thumb  { background: #30363d; border-radius: 3px; }
+
+  /* ── Empty feed ── */
+  #empty-feed {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--muted); gap: 12px;
+  }
+  #empty-feed svg { opacity: .3; }
+  #empty-feed p   { font-size: 14px; }
+
+  /* ── Message ── */
+  .msg { display: flex; gap: 10px; animation: fadein .2s ease; }
+  @keyframes fadein { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; margin-top: 2px;
+  }
+  .msg-body { flex: 1; min-width: 0; }
+  .msg-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .agent-name  { font-size: 13px; font-weight: 600; }
+  .msg-time    { font-size: 10px; color: var(--muted); }
+  .msg-content {
+    font-size: 13px; line-height: 1.6; color: var(--text);
+    word-break: break-word; white-space: pre-wrap;
+  }
+  .msg-content code {
+    background: #161b22; border: 1px solid var(--border);
+    padding: 0 4px; border-radius: 3px; font-size: 12px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+  }
+  .msg-content pre {
+    background: #161b22; border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 14px; margin: 6px 0;
+    overflow-x: auto; font-size: 12px; line-height: 1.5;
+  }
+  .msg-content pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  .tool-badge {
+    display: inline-block; font-size: 10px; padding: 1px 7px;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; color: #94a3b8; margin-top: 4px; font-family: monospace;
+  }
+  /* system messages */
+  .msg.system .msg-content { color: var(--muted); font-style: italic; }
+
+  /* ── Typing indicator ── */
+  #typing {
+    display: none; align-items: center; gap: 8px;
+    padding: 4px 0 0 42px; font-size: 12px; color: var(--muted);
+  }
+  .typing-dots span {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--muted); margin: 0 1px;
+    animation: blink 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: .2s; }
+  .typing-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+  /* ── Input area ── */
+  #input-area {
+    padding: 14px 20px; border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  #task-form { display: flex; gap: 10px; align-items: flex-end; }
+  #task-input {
+    flex: 1; resize: none; min-height: 44px; max-height: 160px;
+    background: #0d1117; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px;
+    padding: 10px 14px; font-family: inherit; line-height: 1.5;
+    outline: none; transition: border-color .15s;
+  }
+  #task-input:focus { border-color: var(--accent); }
+  #task-input::placeholder { color: var(--muted); }
+  #submit-btn {
+    padding: 10px 20px; background: var(--accent); color: #0d1117;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity .15s; white-space: nowrap; height: 44px;
+  }
+  #submit-btn:hover:not(:disabled) { opacity: .85; }
+  #submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+  #input-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* ── Quick tasks ── */
+  #quick-tasks {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 10px 20px 0; background: var(--surface);
+  }
+  .quick-chip {
+    padding: 4px 11px; background: #161b22; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 12px; color: var(--muted);
+    cursor: pointer; transition: border-color .15s, color .15s; white-space: nowrap;
+  }
+  .quick-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .quick-chips-label { font-size: 11px; color: #4a5568; align-self: center; }
+
+  /* ── Stop button ── */
+  #stop-btn {
+    padding: 6px 16px; background: transparent; color: #ef4444;
+    border: 1px solid #ef4444; border-radius: 8px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  #stop-btn:hover { background: #ef4444; color: #fff; }
+  #stop-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Scrollbar global ── */
+  #task-list::-webkit-scrollbar { width: 4px; }
+  #task-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+  /* ── Status bar ── */
+  #status-bar {
+    padding: 8px 20px; background: #0b0f16;
+    border-bottom: 1px solid var(--border);
+    display: none; flex-wrap: wrap; align-items: center; gap: 10px;
+    font-size: 12px;
+  }
+  .status-pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 20px;
+    color: var(--muted); white-space: nowrap;
+  }
+  .status-pill strong { color: var(--text); }
+  .hp-section { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .hp-section + .hp-section {
+    padding-left: 10px; border-left: 1px solid var(--border); margin-left: 2px;
+  }
+  .hp-entry { display: flex; align-items: center; gap: 4px; }
+  .hp-name { font-size: 10px; color: var(--muted); min-width: 38px; }
+  .hp-name.enemy { color: #f87171; }
+  .hp-bar  { width: 52px; height: 5px; background: #1f2937; border-radius: 3px; overflow: hidden; }
+  .hp-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+  .hp-val  { font-size: 9px; color: var(--muted); min-width: 30px; }
+
+  /* ── Tabs ── */
+  #tab-bar {
+    display: flex; gap: 2px; padding: 0 20px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    padding: 9px 18px; font-size: 13px; font-weight: 600;
+    background: transparent; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Story feed ── */
+  #story-feed {
+    flex: 1; overflow-y: auto; padding: 28px 32px;
+    display: none; flex-direction: column; gap: 0;
+    background: var(--bg);
+  }
+  #story-feed::-webkit-scrollbar       { width: 6px; }
+  #story-feed::-webkit-scrollbar-track  { background: transparent; }
+  #story-feed::-webkit-scrollbar-thumb  { background: #30363d; border-radius: 3px; }
+  .story-entry { margin-bottom: 28px; max-width: 760px; }
+  .story-speaker {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .story-speaker-line {
+    flex: 1; height: 1px; background: var(--border); opacity: .5;
+  }
+  .story-text {
+    font-size: 15px; line-height: 1.85; color: #cdd5e0;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .story-text strong { color: var(--text); }
+  #story-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--muted); gap: 12px;
+  }
+  #story-empty svg { opacity: .3; }
+  #story-empty p { font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ── Sidebar ─────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div id="sidebar-header">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      </svg>
+      <span>D&D AI Adventure</span>
+      <button id="stop-all-btn" title="Stop all running tasks">&#9632; Stop All</button>
+    </div>
+    <div id="task-list">
+      <div id="empty-sidebar">No tasks yet.<br/>Submit one below.</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ────────────────────────────────────────── -->
+  <main id="main">
+    <div id="topbar">
+      <div style="flex:1">
+        <div id="topbar-title">Select a task or submit a new one</div>
+        <div id="topbar-desc"></div>
+      </div>
+      <button id="stop-btn" style="display:none" title="Stop this task">&#9632; Stop</button>
+      <div id="topbar-status"></div>
+    </div>
+
+    <!-- Agent legend -->
+    <div id="legend"></div>
+
+    <!-- Live game status bar -->
+    <div id="status-bar"></div>
+
+    <!-- Tab bar -->
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="log">&#128221; Log</button>
+      <button class="tab-btn" data-tab="story">&#128218; Story</button>
+    </div>
+
+    <!-- Message feed (Log tab) -->
+    <div id="feed">
+      <div id="empty-feed">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <p>Click Start Adventure to begin autonomous gameplay</p>
+      </div>
+    </div>
+
+    <!-- Story feed (Story tab) -->
+    <div id="story-feed">
+      <div id="story-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <p>Narrative will appear here as the adventure unfolds</p>
+      </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div id="typing">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span id="typing-who">agents working…</span>
+    </div>
+
+    <!-- Quick tasks -->
+    <div id="quick-tasks">
+      <span class="quick-chips-label">Mode:</span>
+      <button class="quick-chip" data-task="start-adventure">Autonomous D&D run</button>
+    </div>
+
+    <!-- Input -->
+    <div id="input-area">
+      <form id="task-form">
+        <textarea id="task-input" rows="1" placeholder="Optional note for this run (not required)"></textarea>
+        <button id="submit-btn" type="submit">Start Adventure</button>
+      </form>
+      <div id="input-hint">Press Ctrl+Enter to start</div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────
+const AGENT_COLORS = {
+  DungeonMaster: '#7c3aed',
+  Thorin:        '#d97706',
+  Elara:         '#2563eb',
+  Shadow:        '#16a34a',
+  Aldric:        '#0e7490',
+  System:        '#b91c1c',
+};
+
+// Human-readable display names for agents
+const AGENT_LABELS = {
+  DungeonMaster: 'Dungeon Master',
+  Thorin:        'Thorin (Fighter)',
+  Elara:         'Elara (Wizard)',
+  Shadow:        'Shadow (Rogue)',
+  Aldric:        'Aldric (Cleric)',
+  System:        'System',
+};
+
+function agentColor(name) {
+  return AGENT_COLORS[name] || '#374151';
+}
+
+function initials(name) {
+  if (!name) return '?';
+  if (name === 'DungeonMaster') return 'DM';
+  const parts = name.match(/[A-Z][a-z]*/g) || [name];
+  return parts.slice(0, 2).map(p => p[0]).join('');
+}
+
+function displayName(name) {
+  return AGENT_LABELS[name] || name;
+}
+
+function fmt(ts) {
+  if (!ts) return '';
+  try {
+    return new Date(ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch { return ''; }
+}
+
+// ── Markdown-lite renderer ─────────────────────────────────────────────────
+function renderContent(raw) {
+  if (!raw) return '';
+
+  // Escape HTML (before any other processing)
+  let s = raw
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+
+  // Fenced code blocks  ```lang\ncode\n```
+  s = s.replace(/```(\w*)\n?([\s\S]*?)```/g, (_m, lang, code) =>
+    `<pre><code class="lang-${lang}">${code.trimEnd()}</code></pre>`);
+
+  // Inline `code`
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // **bold**
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  return s;
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
+let _tasks    = {};       // id → task object
+let _active   = null;     // currently viewed task id
+let _eventSrc = null;     // active EventSource
+let _activeTab = 'log';   // 'log' | 'story'
+
+// ── DOM refs ──────────────────────────────────────────────────────────────
+const feed        = document.getElementById('feed');
+const emptyFeed   = document.getElementById('empty-feed');
+const storyFeed   = document.getElementById('story-feed');
+const storyEmpty  = document.getElementById('story-empty');
+const statusBar   = document.getElementById('status-bar');
+const taskList    = document.getElementById('task-list');
+const emptySide  = document.getElementById('empty-sidebar');
+const topTitle   = document.getElementById('topbar-title');
+const topDesc    = document.getElementById('topbar-desc');
+const topStatus  = document.getElementById('topbar-status');
+const stopBtn      = document.getElementById('stop-btn');
+const stopAllBtn   = document.getElementById('stop-all-btn');
+const legend       = document.getElementById('legend');
+const typing     = document.getElementById('typing');
+const typingWho  = document.getElementById('typing-who');
+const taskForm   = document.getElementById('task-form');
+const taskInput  = document.getElementById('task-input');
+const submitBtn  = document.getElementById('submit-btn');
+
+// ── Game state status bar ──────────────────────────────────────────────────────────
+const SCENE_NAMES = [
+  'The Village of Millhaven',
+  'Crypt Entrance',
+  "The Shadow Lord's Chamber",
+];
+
+function hpColor(pct) {
+  if (pct > 0.6) return '#10b981';
+  if (pct > 0.3) return '#f59e0b';
+  return '#ef4444';
+}
+
+function renderStatusBar(gs) {
+  if (!gs) { statusBar.style.display = 'none'; return; }
+  statusBar.style.display = 'flex';
+
+  const sceneId    = gs.scene_id  || 0;
+  const sceneName  = (gs.flags && gs.flags.scene_title) || SCENE_NAMES[sceneId] || `Scene ${sceneId}`;
+  const round      = gs.round     || 1;
+  const nextActor  = gs.next_actor || '';
+  const party      = gs.party     || [];
+  const aliveEnemies = (gs.enemies || []).filter(e => e.alive !== false && (e.current_hp || 0) > 0);
+
+  const actorColor = nextActor ? agentColor(nextActor) : 'var(--muted)';
+  const actorLabel = nextActor ? displayName(nextActor) : '—';
+
+  let html = `
+    <div class="status-pill">
+      <span style="opacity:.55">Scene</span>
+      <strong>${esc(sceneName)}</strong>
+      <span style="opacity:.35">·</span>
+      <span style="opacity:.55">Round</span>
+      <strong>${round}</strong>
+    </div>
+    <div class="status-pill" style="border-color:${actorColor};color:${actorColor}">
+      ⚔️&nbsp;${esc(actorLabel)}
+    </div>`;
+
+  if (party.length) {
+    html += `<div class="hp-section">`;
+    party.forEach(p => {
+      const curr = p.current_hp ?? 0;
+      const max  = p.max_hp  || 1;
+      const pct  = Math.max(0, Math.min(1, curr / max));
+      html += `<div class="hp-entry" title="${esc(p.name)}: ${curr}/${max} HP">
+        <span class="hp-name">${esc((p.name||'?').split(' ')[0])}</span>
+        <div class="hp-bar"><div class="hp-fill" style="width:${(pct*100).toFixed(0)}%;background:${hpColor(pct)}"></div></div>
+        <span class="hp-val">${curr}/${max}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (aliveEnemies.length) {
+    html += `<div class="hp-section">`;
+    aliveEnemies.forEach(e => {
+      const curr = e.current_hp ?? 0;
+      const max  = e.max_hp   || 1;
+      const pct  = Math.max(0, Math.min(1, curr / max));
+      html += `<div class="hp-entry" title="${esc(e.name)}: ${curr}/${max} HP">
+        <span class="hp-name enemy">${esc((e.name||'?').split(' ')[0])}</span>
+        <div class="hp-bar"><div class="hp-fill" style="width:${(pct*100).toFixed(0)}%;background:#ef4444"></div></div>
+        <span class="hp-val">${curr}/${max}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  statusBar.innerHTML = html;
+}
+
+let _gsTimer = null;
+
+function startGsPoll(taskId) {
+  stopGsPoll();
+  _updateGs(taskId);
+  _gsTimer = setInterval(() => _updateGs(taskId), 4000);
+}
+
+function stopGsPoll() {
+  if (_gsTimer) { clearInterval(_gsTimer); _gsTimer = null; }
+  statusBar.style.display = 'none';
+}
+
+async function _updateGs(taskId) {
+  try {
+    const res = await fetch(`/api/game/${taskId}/state`);
+    if (!res.ok) return;
+    const data = await res.json();
+    renderStatusBar(data.state);
+  } catch {}
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────
+document.getElementById('tab-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  if (tab === _activeTab) return;
+  _activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'log') {
+    feed.style.display      = 'flex';
+    storyFeed.style.display = 'none';
+  } else {
+    feed.style.display      = 'none';
+    storyFeed.style.display = 'flex';
+    storyFeed.scrollTop     = storyFeed.scrollHeight;
+  }
+});
+
+// ── Legend ─────────────────────────────────────────────────────────────────
+(function buildLegend() {
+  Object.entries(AGENT_COLORS).forEach(([name, color]) => {
+    const el = document.createElement('div');
+    el.className = 'legend-item';
+    el.innerHTML = `<div class="legend-dot" style="background:${color}"></div><span>${AGENT_LABELS[name] || name}</span>`;
+    legend.appendChild(el);
+  });
+})();
+
+// ── Sidebar ────────────────────────────────────────────────────────────────
+function badgeClass(status) {
+  return 'status-badge badge-' + (status || 'pending');
+}
+
+function renderSidebar() {
+  const items = Object.values(_tasks).reverse();
+  if (!items.length) {
+    taskList.innerHTML = '';
+    taskList.appendChild(document.getElementById('empty-sidebar') || createEmptySide());
+    emptySide.style.display = 'block';
+    return;
+  }
+  emptySide.style.display = 'none';
+
+  // Preserve existing items, only update / add
+  items.forEach(task => {
+    let el = document.getElementById('si-' + task.id);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'task-item';
+      el.id = 'si-' + task.id;
+      el.addEventListener('click', () => openTask(task.id));
+      taskList.insertBefore(el, taskList.firstChild);
+    }
+    if (_active === task.id) el.classList.add('active');
+    else el.classList.remove('active');
+
+    const d = new Date(task.created_at);
+    const timeStr = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    el.innerHTML = `
+      <div class="task-item-id">#${task.id}</div>
+      <div class="task-item-desc" title="${esc(task.description)}">${esc(task.description)}</div>
+      <div class="task-item-meta">
+        <span class="${badgeClass(task.status)}">${task.status}</span>
+        <span class="task-time">${timeStr}</span>
+        <span class="task-time">${task.message_count || 0} msgs</span>
+      </div>`;
+  });
+}
+
+function createEmptySide() {
+  const d = document.createElement('div');
+  d.id = 'empty-sidebar';
+  d.className = '';
+  d.style = 'padding:32px 16px;text-align:center;color:var(--muted);font-size:13px';
+  d.textContent = 'No tasks yet. Submit one below.';
+  return d;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Open task ─────────────────────────────────────────────────────────────
+async function openTask(id) {
+  if (_active === id) return;
+
+  // Close existing SSE
+  if (_eventSrc) { _eventSrc.close(); _eventSrc = null; }
+
+  _active = id;
+  renderSidebar();
+
+  // Clear both feeds
+  feed.innerHTML = '';
+  emptyFeed.style.display = 'none';
+  storyFeed.innerHTML = '';
+  storyFeed.appendChild(storyEmpty);
+  storyEmpty.style.display = 'flex';
+
+  const task = _tasks[id];
+  topTitle.textContent = `Task #${task.id}`;
+  topDesc.textContent  = task.description;
+  updateTopStatus(task.status);
+
+  // Connect SSE
+  connectSSE(id);
+  startGsPoll(id);
+}
+
+// ── SSE ────────────────────────────────────────────────────────────────────
+function connectSSE(taskId) {
+  const es = new EventSource(`/api/tasks/${taskId}/stream`);
+  _eventSrc = es;
+
+  es.onmessage = e => {
+    const data = JSON.parse(e.data);
+    handleSSEEvent(taskId, data);
+  };
+
+  es.onerror = () => {
+    setTyping(false);
+    es.close();
+  };
+}
+
+function handleSSEEvent(taskId, data) {
+  if (!_tasks[taskId]) return;
+
+  if (data.type === 'status') {
+    _tasks[taskId].status = data.status;
+    renderSidebar();
+    if (_active === taskId) updateTopStatus(data.status);
+    if (data.status === 'running') setTyping(true, 'agents working…');
+    return;
+  }
+
+  if (data.type === 'done') {
+    _tasks[taskId].status = data.status || 'completed';
+    setTyping(false);
+    stopGsPoll();
+    renderSidebar();
+    if (_active === taskId) updateTopStatus(_tasks[taskId].status);
+    if (_eventSrc) { _eventSrc.close(); _eventSrc = null; }
+    return;
+  }
+
+  if (data.type === 'message' || data.name) {
+    _tasks[taskId].message_count = (_tasks[taskId].message_count || 0) + 1;
+    if (_active === taskId) appendMessage(data);
+    setTyping(true, `${data.name} responded, waiting for next…`);
+  }
+}
+
+// ── Story: is this message narrative? ────────────────────────────────────
+const STORY_AGENTS = new Set(['DungeonMaster', 'Thorin', 'Elara', 'Shadow', 'Aldric']);
+
+function isStoryWorthy(msg) {
+  if (!STORY_AGENTS.has(msg.name)) return false;
+  const content = (msg.content || '').trim();
+  if (!content) return false;
+  // Skip pure tool-call placeholder lines
+  if (/^\[tool call:/i.test(content)) return false;
+  // Skip tool result JSON blobs (start with { or [{)
+  if (/^[\[{]/.test(content)) return false;
+  // Skip very short fragments (likely just punctuation or filler)
+  if (content.length < 20) return false;
+  return true;
+}
+
+function storyClean(raw) {
+  // Strip leftover tool-call JSON lines embedded in narrative
+  return raw
+    .split('\n')
+    .filter(line => !/^\s*[\[{]/.test(line))  // remove JSON lines
+    .filter(line => !/^\[tool call:/i.test(line.trim()))
+    .join('\n')
+    .trim();
+}
+
+// ── Append message ─────────────────────────────────────────────────────────
+function appendMessage(msg) {
+  const content = msg.content || '';
+  if (!content && !msg.has_tool) return;  // empty, skip
+
+  // ── Log feed ──
+  const color = agentColor(msg.name);
+  const el = document.createElement('div');
+  el.className = 'msg' + (msg.name === 'System' ? ' system' : '');
+
+  const toolBadge = msg.has_tool
+    ? `<div class="tool-badge">🔧 tool call</div>` : '';
+
+  el.innerHTML = `
+    <div class="avatar" style="background:${color}">${initials(msg.name)}</div>
+    <div class="msg-body">
+      <div class="msg-header">
+        <span class="agent-name" style="color:${color}">${esc(displayName(msg.name))}</span>
+        <span class="msg-time">${fmt(msg.timestamp)}</span>
+      </div>
+      <div class="msg-content">${renderContent(content)}</div>
+      ${toolBadge}
+    </div>`;
+
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+
+  // ── Story feed ──
+  if (isStoryWorthy(msg)) {
+    appendStory(msg);
+  }
+}
+
+function appendStory(msg) {
+  const cleanText = storyClean(msg.content || '');
+  if (!cleanText) return;
+
+  // Hide the empty placeholder once we have content
+  storyEmpty.style.display = 'none';
+
+  const color = agentColor(msg.name);
+  const label = displayName(msg.name);
+
+  const entry = document.createElement('div');
+  entry.className = 'story-entry';
+  entry.innerHTML = `
+    <div class="story-speaker">
+      <span style="color:${color}">${esc(label)}</span>
+      <div class="story-speaker-line"></div>
+      <span style="font-size:9px;color:var(--muted);font-weight:400">${fmt(msg.timestamp)}</span>
+    </div>
+    <div class="story-text">${renderContent(cleanText)}</div>`;
+
+  storyFeed.appendChild(entry);
+  if (_activeTab === 'story') storyFeed.scrollTop = storyFeed.scrollHeight;
+}
+
+// ── Typing indicator ───────────────────────────────────────────────────────
+function setTyping(show, text) {
+  typing.style.display = show ? 'flex' : 'none';
+  if (text) typingWho.textContent = text;
+}
+
+// ── Top status ─────────────────────────────────────────────────────────────
+function updateTopStatus(status) {
+  topStatus.innerHTML = `<span class="${badgeClass(status)}">${status}</span>`;
+  stopBtn.style.display = (status === 'running') ? 'inline-block' : 'none';
+}
+
+// ── Stop button ────────────────────────────────────────────────────────────
+stopBtn.addEventListener('click', async () => {
+  if (!_active) return;
+  stopBtn.disabled = true;
+  stopBtn.textContent = 'Stopping…';
+  try {
+    await fetch(`/api/tasks/${_active}/stop`, {method: 'POST'});
+  } catch (err) {
+    console.error('stop failed', err);
+  } finally {
+    stopBtn.disabled = false;
+    stopBtn.innerHTML = '&#9632; Stop';
+  }
+});
+
+// ── Submit task ────────────────────────────────────────────────────────────
+taskForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Starting…';
+
+  try {
+    const res = await fetch('/api/game/start', { method: 'POST' });
+    if (!res.ok) throw new Error(await res.text());
+    const task = await res.json();
+    _tasks[task.id] = task;
+    taskInput.value = '';
+    autoResizeTA();
+    renderSidebar();
+    openTask(task.id);
+  } catch (err) {
+    alert('Error: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Start Adventure';
+  }
+});
+
+// ctrl+enter submits
+taskInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); taskForm.dispatchEvent(new Event('submit')); }
+});
+
+// ── Quick task chips ───────────────────────────────────────────────────────
+document.getElementById('quick-tasks').addEventListener('click', e => {
+  const chip = e.target.closest('.quick-chip');
+  if (!chip) return;
+  const text = chip.dataset.task;
+  taskInput.value = text;
+  autoResizeTA();
+  taskInput.focus();
+  // Shift+click → submit immediately
+  if (e.shiftKey) taskForm.dispatchEvent(new Event('submit'));
+});
+
+// Auto-resize textarea
+function autoResizeTA() {
+  taskInput.style.height = '44px';
+  taskInput.style.height = Math.min(taskInput.scrollHeight, 160) + 'px';
+}
+taskInput.addEventListener('input', autoResizeTA);
+
+// ── Stop All button ───────────────────────────────────────────────────────
+stopAllBtn.addEventListener('click', async () => {
+  if (!confirm('Stop all running tasks?')) return;
+  stopAllBtn.disabled = true;
+  try {
+    const res  = await fetch('/api/tasks/stop-all', {method: 'POST'});
+    const data = await res.json();
+    console.log('stopped', data.count, 'tasks');
+  } catch (err) {
+    console.error('stop-all failed', err);
+  } finally {
+    stopAllBtn.disabled = false;
+  }
+});
+
+// ── Poll for task list updates ──────────────────────────────────────────
+async function pollTasks() {
+  try {
+    const res  = await fetch('/api/tasks');
+    const list = await res.json();
+    const hasRunning = list.some(t => t.status === 'running' || t.status === 'pending');
+    stopAllBtn.style.display = hasRunning ? 'inline-block' : 'none';
+    list.forEach(t => { _tasks[t.id] = {...(_tasks[t.id] || {}), ...t}; });
+    renderSidebar();
+  } catch {}
+}
+
+// Initial load
+pollTasks();
+setInterval(pollTasks, 5000);
+</script>
+</body>
+</html>

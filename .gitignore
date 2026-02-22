@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Logs
+logs/
+*.log
+
+# Ollama model blobs (large binary files)
+ollama/models/blobs/
+ollama/history
+ollama/id_ed25519
+ollama/id_ed25519.pub
+
+# Node.js
+node_modules/
+mcp-servers/node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Docker
+.docker/
+
+# AutoGen output/coding workspace
+autogen/coding/
+autogen/output/
+
+# Workspace generated files
+workspace/*.txt
+workspace/*.py
+
+# Memory persistence (contains private agent conversation data)
+memory/memory.json
+
+# Environment variables
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,11 @@
+pyautogen[graph]>=0.2.0
+openai>=1.0.0
+aiofiles
+python-dotenv
+mcp==1.2.0
+requests
+websockets
+pyyaml
+nest_asyncio
+httpx-sse
+autogen

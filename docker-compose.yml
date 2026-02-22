@@ -1,0 +1,180 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    runtime: nvidia
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/ollama/cuda_v12:/usr/lib/ollama/cuda_v13:/usr/lib/ollama
+    volumes:
+      - ./ollama:/root/.ollama
+      - /usr/lib/wsl:/usr/lib/wsl:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    restart: unless-stopped
+
+  autogen:
+    image: python:3.11-slim
+    container_name: autogen
+    depends_on:
+      - ollama
+      - mcp-filesystem
+      - mcp-web
+      - mcp-exec
+      - mcp-memory
+      - mcp-git
+      - mcp-time
+    volumes:
+      - ./autogen:/app
+      - ./workspace:/workspace
+      - ./logs:/logs
+      - ./configs:/configs
+      - ./memory:/memory
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    working_dir: /app
+    command: sleep infinity
+    restart: unless-stopped
+
+  mcp-filesystem:
+    image: node:20-slim
+    container_name: mcp-filesystem
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./workspace:/workspace
+      - ./mcp-servers:/mcp-servers
+    working_dir: /mcp-servers
+    command: >
+      sh -c "npm install -g @modelcontextprotocol/server-filesystem &&
+             npm install -g supergateway &&
+             while true; do
+               npx supergateway --stdio 'npx @modelcontextprotocol/server-filesystem /workspace' --port 3001;
+             done"
+    restart: unless-stopped
+
+  mcp-web:
+    image: node:20-slim
+    container_name: mcp-web
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./mcp-servers:/mcp-servers
+    working_dir: /mcp-servers
+    command: >
+      sh -c "apt-get update -qq && apt-get install -y -qq python3 python3-pip &&
+             pip3 install mcp-server-fetch --break-system-packages &&
+             npm install -g supergateway &&
+             while true; do
+               npx supergateway --stdio 'python3 -m mcp_server_fetch' --port 3002;
+             done"
+    restart: unless-stopped
+
+  mcp-exec:
+    image: node:20-slim
+    container_name: mcp-exec
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./workspace:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /mcp-servers
+    command: >
+      sh -c "apt-get update -qq && apt-get install -y -qq python3 python3-pip &&
+             pip3 install mcp-server-shell --break-system-packages &&
+             npm install -g supergateway &&
+             while true; do
+               npx supergateway --stdio 'python3 -m mcp_server_shell' --port 3003;
+             done"
+    restart: unless-stopped
+
+  mcp-memory:
+    image: node:20-slim
+    container_name: mcp-memory
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./mcp-servers:/mcp-servers
+      - ./memory:/memory
+    environment:
+      - MEMORY_FILE_PATH=/memory/memory.json
+    command: >
+      sh -c "npm install -g @modelcontextprotocol/server-memory &&
+             npm install -g supergateway &&
+             mkdir -p /memory &&
+             while true; do
+               npx supergateway --stdio 'npx @modelcontextprotocol/server-memory /memory/memory.json' --port 3005;
+             done"
+    restart: unless-stopped
+
+  mcp-git:
+    image: node:20-slim
+    container_name: mcp-git
+    ports:
+      - "3006:3006"
+    volumes:
+      - ./workspace:/workspace
+      - ./mcp-servers:/mcp-servers
+    working_dir: /mcp-servers
+    command: >
+      sh -c "apt-get update -qq && apt-get install -y -qq python3 python3-pip git &&
+             pip3 install mcp-server-git --break-system-packages &&
+             npm install -g supergateway &&
+             git config --global user.email 'agentforge@local' &&
+             git config --global user.name 'AgentForge' &&
+             while true; do
+               npx supergateway --stdio 'python3 -m mcp_server_git --repository /workspace' --port 3006;
+             done"
+    restart: unless-stopped
+
+  mcp-time:
+    image: node:20-slim
+    container_name: mcp-time
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./mcp-servers:/mcp-servers
+    working_dir: /mcp-servers
+    command: >
+      sh -c "apt-get update -qq && apt-get install -y -qq python3 python3-pip &&
+             pip3 install mcp-server-time --break-system-packages &&
+             npm install -g supergateway &&
+             while true; do
+               npx supergateway --stdio 'python3 -m mcp_server_time' --port 3007;
+             done"
+    restart: unless-stopped
+
+  web:
+    image: python:3.11-slim
+    container_name: ai-web
+    depends_on:
+      - ollama
+      - mcp-filesystem
+      - mcp-web
+      - mcp-exec
+      - mcp-memory
+      - mcp-git
+      - mcp-time
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./autogen:/app
+      - ./workspace:/workspace
+      - ./logs:/logs
+      - ./configs:/configs
+      - ./memory:/memory
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    working_dir: /app
+    command: >
+      sh -c "pip install -q -r /app/requirements.txt &&
+             pip install -q -r /app/web_requirements.txt &&
+             python web_server.py"
+    restart: unless-stopped

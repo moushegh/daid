@@ -1,0 +1,10 @@
+{
+  "name": "mcp-servers",
+  "version": "1.0.0",
+  "dependencies": {
+    "@modelcontextprotocol/server-filesystem": "latest",
+    "@modelcontextprotocol/server-git": "latest",
+    "@modelcontextprotocol/server-github": "latest",
+    "supergateway": "latest"
+  }
+}
