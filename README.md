@@ -128,7 +128,11 @@ All `game_id` parameters are optional — if omitted or empty, the server automa
 
 ## Web UI
 
-The single-page UI at `http://localhost:8080` has three live elements:
+The single-page UI at `http://localhost:8080` has three live elements.
+
+![Log Tab — live agent messages with HP status bar](docs/screenshot-log-tab.png)
+
+![Story Tab — clean narrative view](docs/screenshot-story-tab.png)
 
 ### Status Bar
 Polls `/api/game/{id}/state` every 4 seconds and displays:
