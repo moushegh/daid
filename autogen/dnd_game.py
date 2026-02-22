@@ -331,7 +331,11 @@ class DnDGame:
                     return None  # terminates GroupChat
                 return _get_next_actor_from_state()
 
-            return next_in_cycle(last_speaker.name)
+            # A player just finished their turn — always hand back to the DM
+            # so the pattern is: DM → Player → DM → Player → ...
+            # The DM hook calls advance_turn, so _get_next_actor_from_state()
+            # will pick the correct next player after the DM reacts.
+            return dm_agent
 
         group_chat = GroupChat(
             agents=[self.agents[k] for k in cycle] + [self.user_proxy],

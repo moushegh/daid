@@ -311,19 +311,40 @@ List of all task sessions with status and message counts.
 
 ## How a Game Turn Works
 
+The turn pattern is **DM → Player → DM → Player → DM → …** — the Dungeon Master reacts after every individual player action, not after the whole party has gone.
+
+```
+Round N:
+  DM narrates scene / enemy action
+    └─ advance_turn → next_actor = Thorin
+  Thorin declares action
+    └─ speaker_selector returns DM
+  DM resolves Thorin's action, narrates result
+    └─ advance_turn → next_actor = Elara
+  Elara declares action
+    └─ speaker_selector returns DM
+  DM resolves Elara's action …
+  … (Shadow, Aldric follow the same pattern)
+  DM wraps round, advance_turn wraps → next_actor = DungeonMaster
+  DM opens Round N+1 …
+```
+
+**Detailed step-by-step:**
+
 ```
 1. speaker_selector picks the next agent (reads next_actor from game state)
 2. Agent calls get_turn_context() to orient itself
 3. Agent generates a response: narrative text + optional tool calls
 4. mcp_tools.py intercepts tool call text and executes it against the MCP server
 5. Tool result is appended as a GameEngine message visible to all agents
-6. After any DM turn, _dm_turn_done_hook() fires:
-   a. Injects advance_turn if DM skipped it
+6. After any player turn, speaker_selector immediately returns DungeonMaster
+7. After a DM turn, _dm_turn_done_hook() fires:
+   a. Injects advance_turn if DM skipped it (moves to next player in initiative)
    b. Seeds enemies if a new scene was just entered
    c. Injects COMBAT ACTIVE nudge if enemies are alive but no damage in last 10 events
    d. Checks check_end_conditions; appends GAME_OVER message if the game ended
-7. _get_next_actor_from_state() reads next_actor from DB to select next speaker
-8. Repeat from step 1 until GAME_OVER
+8. _get_next_actor_from_state() reads next_actor from DB to select the next player
+9. Repeat from step 1 until GAME_OVER
 ```
 
 ---
