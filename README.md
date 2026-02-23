@@ -55,6 +55,15 @@ ai-web container  (port 8080)
                  ├─ dice_server.py          — roll(), validate_notation()
                  ├─ calc_server.py          — eval_expr(), d20_threshold()
                  └─ game_state_server.py    — 12 game tools, auto game_id
+       └─ POST /api/image/generate  → proxies to image-gen service
+
+image-gen container  (port 8090)
+  └─ image_server.py  (FastAPI)
+       └─ POST /generate   — text-to-image via SDXL-Turbo
+       └─ GET  /health     — model load status
+       └─ GET  /images/{filename} — serve generated images
+       └─ model: stabilityai/sdxl-turbo (GPU, fp16)
+       └─ output volume: ./images
 
 ollama container  (port 11434)
   └─ llama3.1:8b  — shared by all agents
@@ -123,6 +132,71 @@ All tool servers run as stdio subprocesses inside the `ai-web` container. They a
 | `check_end_conditions` | DM only | Evaluate victory/defeat state |
 
 All `game_id` parameters are optional — if omitted or empty, the server automatically resolves to the most recently updated running game.
+
+---
+
+## Image Generation Service
+
+The `image-gen` container runs a standalone FastAPI service on port `8090` that provides local, GPU-accelerated text-to-image generation using **Stable Diffusion XL Turbo** (SDXL-Turbo). It is used by the comic generator and can be called directly by any service via `http://image-gen:8090`.
+
+### Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/generate` | Generate a single image from a text prompt |
+| `GET` | `/health` | Health check — reports model, device, and load status |
+| `GET` | `/images/{filename}` | Serve a previously generated image |
+
+### `POST /generate` — Request body
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `prompt` | string | _(required)_ | Text description of the image to generate |
+| `negative_prompt` | string | `"blurry, low quality…"` | Things to avoid in the output |
+| `width` | int | `512` | Output width in pixels |
+| `height` | int | `512` | Output height in pixels |
+| `num_inference_steps` | int | `4` | Diffusion steps (SDXL-Turbo needs only 1–4) |
+| `guidance_scale` | float | `0.0` | CFG scale (SDXL-Turbo works best at 0.0) |
+| `seed` | int | `null` | Optional fixed seed for reproducibility |
+| `style` | string | `"comic"` | Art style preset (see table below) |
+
+### Style Presets
+
+| Style | Description |
+|---|---|
+| `comic` | Comic book art — bold outlines, vibrant colors, graphic novel panel |
+| `manga` | Black-and-white manga with dramatic shading |
+| `fantasy` | Epic fantasy digital painting with ethereal lighting |
+| `realistic` | Photorealistic, cinematic, 8k |
+| `watercolor` | Soft watercolor painting with flowing brushstrokes |
+
+Each preset automatically prepends a style-specific positive prompt prefix and appends style-appropriate negative terms.
+
+### `POST /generate` — Response
+
+```json
+{
+  "filename": "3f8a21c04b9e.png",
+  "url": "/images/3f8a21c04b9e.png",
+  "width": 512,
+  "height": 512,
+  "elapsed_seconds": 1.43,
+  "prompt": "a dwarf fighter charging into a dark crypt",
+  "style": "comic"
+}
+```
+
+Generated images are saved to the shared `./images` volume and served statically.
+
+### Configuration
+
+| Environment Variable | Default | Description |
+|---|---|---|
+| `SD_MODEL` | `stabilityai/sdxl-turbo` | HuggingFace model ID to load |
+| `IMAGE_OUTPUT_DIR` | `/images` | Directory where generated PNGs are saved |
+| `HF_HOME` | `/app/.cache/huggingface` | HuggingFace cache directory |
+
+The model is loaded lazily at startup (pre-warmed via the `startup` event). A mutex (`_model_lock`) serialises concurrent generation requests to prevent GPU OOM errors.
 
 ---
 
@@ -230,6 +304,7 @@ daid-platform/
 │   ├── web_server.py           # FastAPI server, SSE streaming, task management
 │   ├── mcp_tools.py            # MCP stdio client, tool registry, arg coercion
 │   ├── adventure.py            # Party/enemy definitions, scene content
+│   ├── comic_generator.py      # Comic panel generation using image-gen service
 │   ├── main.py                 # General-purpose AutoGen runner (legacy)
 │   ├── llama.py                # Direct Ollama client helper
 │   ├── static/
@@ -238,6 +313,10 @@ daid-platform/
 │       ├── dice_server.py      # Dice MCP server
 │       ├── calc_server.py      # Calculator MCP server
 │       └── game_state_server.py# Game state MCP server (12 tools)
+├── image-gen/
+│   ├── image_server.py         # FastAPI image generation service (SDXL-Turbo)
+│   └── requirements.txt        # Python deps: diffusers, transformers, accelerate
+├── images/                     # Shared volume for generated PNGs
 ├── memory/
 │   ├── game_state.json         # Persisted game state (written by state MCP)
 │   └── IMPLEMENTATION_PLAN.md  # Living architecture and decision log
@@ -372,9 +451,10 @@ Update `models.local_llm.model` and `base_url` in `agent_config.yaml`. Any OpenA
 | Agent framework | [Microsoft AutoGen](https://github.com/microsoft/autogen) |
 | Tool protocol | [Model Context Protocol](https://modelcontextprotocol.io) (stdio transport) |
 | Web backend | [FastAPI](https://fastapi.tiangolo.com) + Server-Sent Events |
+| Image generation | [Stable Diffusion XL Turbo](https://huggingface.co/stabilityai/sdxl-turbo) via [🤗 diffusers](https://github.com/huggingface/diffusers) |
 | Frontend | Vanilla HTML / CSS / JS |
 | Containerization | Docker Compose |
-| GPU | NVIDIA CUDA via `nvidia-container-toolkit` |
+| GPU | NVIDIA CUDA via `nvidia-container-toolkit` (shared by Ollama + image-gen) |
 
 ---
 
