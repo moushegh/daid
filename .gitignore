@@ -25,6 +25,8 @@ ollama/history
 ollama/id_ed25519
 ollama/id_ed25519.pub
 
+#image gen
+image-gen/.cache
 # Node.js
 node_modules/
 mcp-servers/node_modules/

@@ -288,6 +288,130 @@
   }
   #story-empty svg { opacity: .3; }
   #story-empty p { font-size: 14px; }
+
+  /* ── Comic feed ── */
+  #comic-feed {
+    flex: 1; overflow-y: auto; padding: 28px 32px;
+    display: none; flex-direction: column; gap: 0;
+    background: var(--bg); align-items: center;
+  }
+  #comic-feed::-webkit-scrollbar       { width: 6px; }
+  #comic-feed::-webkit-scrollbar-track  { background: transparent; }
+  #comic-feed::-webkit-scrollbar-thumb  { background: #30363d; border-radius: 3px; }
+  #comic-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--muted); gap: 12px;
+  }
+  #comic-empty svg { opacity: .3; }
+  #comic-empty p { font-size: 14px; text-align: center; }
+  #generate-comic-btn {
+    padding: 10px 24px; background: #7c3aed; color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity .15s; margin-top: 8px;
+  }
+  #generate-comic-btn:hover:not(:disabled) { opacity: .85; background: #6d28d9; }
+  #generate-comic-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .style-select {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  }
+  .mode-label { font-size: 12px; color: var(--muted); }
+
+  /* ── Comic page layout ── */
+  .comic-page {
+    width: 100%; max-width: 900px; margin: 0 auto 40px;
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
+  }
+  .comic-page-title {
+    font-size: 14px; font-weight: 700; color: #222;
+    text-align: center; margin-bottom: 16px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .comic-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .comic-panel {
+    border: 3px solid #111;
+    border-radius: 6px;
+    overflow: hidden; position: relative;
+    background: #f0f0f0;
+    min-height: 280px;
+    display: flex; flex-direction: column;
+  }
+  .comic-panel.generating {
+    border-color: #7c3aed;
+    animation: panel-pulse 1.5s infinite;
+  }
+  @keyframes panel-pulse { 0%,100%{border-color:#7c3aed} 50%{border-color:#a78bfa} }
+  .comic-panel.error { border-color: #ef4444; }
+  .comic-panel-image {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    display: block; background: #e5e5e5;
+  }
+  .comic-panel-placeholder {
+    width: 100%; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #e5e5e5 0%, #d0d0d0 100%);
+    color: #666; font-size: 12px; text-align: center; padding: 16px;
+  }
+  .comic-panel-placeholder.generating {
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    color: #6d28d9;
+  }
+  .comic-panel-caption {
+    padding: 10px 12px; background: #fff;
+    font-size: 12px; line-height: 1.5; color: #222;
+    border-top: 2px solid #111;
+  }
+  .comic-panel-caption strong { color: #000; }
+  .comic-speech-bubble {
+    position: absolute; top: 8px; right: 8px;
+    max-width: 60%; background: #fff; border: 2px solid #111;
+    border-radius: 16px; padding: 6px 12px;
+    font-size: 11px; color: #222; font-style: italic;
+    box-shadow: 2px 2px 0 #111;
+  }
+  .comic-speech-bubble::after {
+    content: ''; position: absolute; bottom: -10px; left: 20px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid #111;
+  }
+  .comic-progress {
+    text-align: center; padding: 20px;
+    color: var(--muted); font-size: 14px;
+  }
+  .comic-progress-bar {
+    width: 300px; height: 8px; background: #1f2937;
+    border-radius: 4px; overflow: hidden; margin: 12px auto;
+  }
+  .comic-progress-fill {
+    height: 100%; background: #7c3aed; border-radius: 4px;
+    transition: width .3s ease;
+  }
+  .comic-title {
+    text-align: center; font-size: 24px; font-weight: 800;
+    color: var(--text); margin-bottom: 24px;
+    text-transform: uppercase; letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,.5);
+  }
+
+  /* ── Mode selector ── */
+  .mode-selector {
+    display: flex; gap: 4px;
+  }
+  .mode-btn {
+    padding: 4px 14px; background: #161b22; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 12px; color: var(--muted);
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mode-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
 </style>
 </head>
 <body>
@@ -327,6 +451,7 @@
     <div id="tab-bar">
       <button class="tab-btn active" data-tab="log">&#128221; Log</button>
       <button class="tab-btn" data-tab="story">&#128218; Story</button>
+      <button class="tab-btn" data-tab="comic">&#127912; Comic</button>
     </div>
 
     <!-- Message feed (Log tab) -->
@@ -350,6 +475,30 @@
       </div>
     </div>
 
+    <!-- Comic feed (Comic tab) -->
+    <div id="comic-feed">
+      <div id="comic-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="12" y1="3" x2="12" y2="12"/>
+        </svg>
+        <p>Comic panels will be generated from the adventure<br/>story using AI image generation</p>
+        <button id="generate-comic-btn" disabled>&#127912; Generate Comic</button>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <label class="mode-label">Art Style:</label>
+          <select id="comic-style-select" class="style-select">
+            <option value="comic" selected>Comic Book</option>
+            <option value="manga">Manga</option>
+            <option value="fantasy">Fantasy Art</option>
+            <option value="realistic">Realistic</option>
+            <option value="watercolor">Watercolor</option>
+          </select>
+        </div>
+      </div>
+      <div id="comic-content" style="display:none;width:100%"></div>
+    </div>
+
     <!-- Typing indicator -->
     <div id="typing">
       <div class="typing-dots"><span></span><span></span><span></span></div>
@@ -359,7 +508,10 @@
     <!-- Quick tasks -->
     <div id="quick-tasks">
       <span class="quick-chips-label">Mode:</span>
-      <button class="quick-chip" data-task="start-adventure">Autonomous D&D run</button>
+      <div class="mode-selector">
+        <button class="mode-btn active" data-mode="story">&#128218; Story</button>
+        <button class="mode-btn" data-mode="comic">&#127912; Comic</button>
+      </div>
     </div>
 
     <!-- Input -->
@@ -443,13 +595,20 @@ function renderContent(raw) {
 let _tasks    = {};       // id → task object
 let _active   = null;     // currently viewed task id
 let _eventSrc = null;     // active EventSource
-let _activeTab = 'log';   // 'log' | 'story'
+let _activeTab = 'log';   // 'log' | 'story' | 'comic'
+let _gameMode = 'story';  // 'story' | 'comic' — selected game mode
+let _comicPollTimer = null;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
 const feed        = document.getElementById('feed');
 const emptyFeed   = document.getElementById('empty-feed');
 const storyFeed   = document.getElementById('story-feed');
 const storyEmpty  = document.getElementById('story-empty');
+const comicFeed   = document.getElementById('comic-feed');
+const comicEmpty  = document.getElementById('comic-empty');
+const comicContent = document.getElementById('comic-content');
+const genComicBtn = document.getElementById('generate-comic-btn');
+const comicStyleSelect = document.getElementById('comic-style-select');
 const statusBar   = document.getElementById('status-bar');
 const taskList    = document.getElementById('task-list');
 const emptySide  = document.getElementById('empty-sidebar');
@@ -567,13 +726,16 @@ document.getElementById('tab-bar').addEventListener('click', e => {
   if (tab === _activeTab) return;
   _activeTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  if (tab === 'log') {
-    feed.style.display      = 'flex';
-    storyFeed.style.display = 'none';
+  feed.style.display      = (tab === 'log')   ? 'flex' : 'none';
+  storyFeed.style.display = (tab === 'story') ? 'flex' : 'none';
+  comicFeed.style.display = (tab === 'comic') ? 'flex' : 'none';
+  if (tab === 'story') storyFeed.scrollTop = storyFeed.scrollHeight;
+  if (tab === 'comic') {
+    comicFeed.scrollTop = comicFeed.scrollHeight;
+    // Auto-poll comic status if we have an active task
+    if (_active) startComicPoll(_active);
   } else {
-    feed.style.display      = 'none';
-    storyFeed.style.display = 'flex';
-    storyFeed.scrollTop     = storyFeed.scrollHeight;
+    stopComicPoll();
   }
 });
 
@@ -655,6 +817,11 @@ async function openTask(id) {
   storyFeed.innerHTML = '';
   storyFeed.appendChild(storyEmpty);
   storyEmpty.style.display = 'flex';
+  // Reset comic feed
+  comicContent.style.display = 'none';
+  comicContent.innerHTML = '';
+  comicEmpty.style.display = 'flex';
+  genComicBtn.disabled = false;
 
   const task = _tasks[id];
   topTitle.textContent = `Task #${task.id}`;
@@ -698,8 +865,23 @@ function handleSSEEvent(taskId, data) {
     setTyping(false);
     stopGsPoll();
     renderSidebar();
-    if (_active === taskId) updateTopStatus(_tasks[taskId].status);
+    if (_active === taskId) {
+      updateTopStatus(_tasks[taskId].status);
+      genComicBtn.disabled = false;  // enable comic generation when game is done
+    }
     if (_eventSrc) { _eventSrc.close(); _eventSrc = null; }
+    return;
+  }
+
+  // Comic progress events
+  if (data.type === 'comic_progress' || data.type === 'comic_done' || data.type === 'comic_error') {
+    if (_active === taskId) {
+      if (data.type === 'comic_done') {
+        startComicPoll(taskId); // fetch final comic
+      }
+      // Show comic progress in log
+      appendMessage(data);
+    }
     return;
   }
 
@@ -828,7 +1010,13 @@ taskForm.addEventListener('submit', async e => {
   submitBtn.textContent = 'Starting…';
 
   try {
-    const res = await fetch('/api/game/start', { method: 'POST' });
+    const style = comicStyleSelect.value || 'comic';
+    const body = { mode: _gameMode, comic_style: style };
+    const res = await fetch('/api/game/start', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
     if (!res.ok) throw new Error(await res.text());
     const task = await res.json();
     _tasks[task.id] = task;
@@ -836,11 +1024,15 @@ taskForm.addEventListener('submit', async e => {
     autoResizeTA();
     renderSidebar();
     openTask(task.id);
+    // If comic mode, auto-switch to comic tab
+    if (_gameMode === 'comic') {
+      document.querySelector('.tab-btn[data-tab="comic"]').click();
+    }
   } catch (err) {
     alert('Error: ' + err.message);
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Start Adventure';
+    submitBtn.textContent = _gameMode === 'comic' ? '🎨 Start Comic Adventure' : 'Start Adventure';
   }
 });
 
@@ -849,16 +1041,14 @@ taskInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); taskForm.dispatchEvent(new Event('submit')); }
 });
 
-// ── Quick task chips ───────────────────────────────────────────────────────
+// ── Mode selector ──────────────────────────────────────────────────────────
 document.getElementById('quick-tasks').addEventListener('click', e => {
-  const chip = e.target.closest('.quick-chip');
-  if (!chip) return;
-  const text = chip.dataset.task;
-  taskInput.value = text;
-  autoResizeTA();
-  taskInput.focus();
-  // Shift+click → submit immediately
-  if (e.shiftKey) taskForm.dispatchEvent(new Event('submit'));
+  const btn = e.target.closest('.mode-btn');
+  if (!btn) return;
+  const mode = btn.dataset.mode;
+  _gameMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  submitBtn.textContent = mode === 'comic' ? '🎨 Start Comic Adventure' : 'Start Adventure';
 });
 
 // Auto-resize textarea
@@ -898,6 +1088,170 @@ async function pollTasks() {
 // Initial load
 pollTasks();
 setInterval(pollTasks, 5000);
+
+// ── Comic functions ────────────────────────────────────────────────────────
+
+// Generate comic button
+genComicBtn.addEventListener('click', async () => {
+  if (!_active) return;
+  genComicBtn.disabled = true;
+  genComicBtn.textContent = '⏳ Generating...';
+  try {
+    const style = comicStyleSelect.value || 'comic';
+    const res = await fetch(`/api/game/${_active}/comic`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ style }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    // Start polling for comic status
+    startComicPoll(_active);
+    comicEmpty.style.display = 'none';
+    comicContent.style.display = 'block';
+    comicContent.innerHTML = `
+      <div class="comic-progress">
+        <div>🎨 Generating comic panels...</div>
+        <div class="comic-progress-bar"><div class="comic-progress-fill" style="width:5%"></div></div>
+        <div style="font-size:12px;margin-top:4px">Analyzing story and creating panel prompts...</div>
+      </div>`;
+  } catch (err) {
+    alert('Error: ' + err.message);
+    genComicBtn.disabled = false;
+    genComicBtn.textContent = '🎨 Generate Comic';
+  }
+});
+
+function startComicPoll(taskId) {
+  stopComicPoll();
+  _updateComic(taskId);
+  _comicPollTimer = setInterval(() => _updateComic(taskId), 3000);
+}
+
+function stopComicPoll() {
+  if (_comicPollTimer) { clearInterval(_comicPollTimer); _comicPollTimer = null; }
+}
+
+async function _updateComic(taskId) {
+  try {
+    const res = await fetch(`/api/game/${taskId}/comic/status`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.status === 'not_started') return; // nothing to show yet
+    if (data.comic) {
+      renderComic(data.comic);
+      if (data.status === 'done' || data.status === 'error') {
+        stopComicPoll();
+        genComicBtn.disabled = false;
+        genComicBtn.textContent = '🎨 Regenerate Comic';
+      }
+    }
+  } catch {}
+}
+
+function renderComic(comic) {
+  comicEmpty.style.display = 'none';
+  comicContent.style.display = 'block';
+
+  let html = '';
+
+  // Title
+  html += `<div class="comic-title">${esc(comic.title || 'D&D Adventure')}</div>`;
+
+  // Waiting for image service
+  if (comic.status === 'waiting' || comic.status === 'waiting_for_service') {
+    html += `
+      <div class="comic-progress">
+        <div>⏳ Waiting for image generation service to start...</div>
+        <div class="comic-progress-bar"><div class="comic-progress-fill" style="width:10%;background:#f59e0b"></div></div>
+        <div style="font-size:12px;margin-top:4px;color:var(--muted)">The SDXL-Turbo model is loading (first startup may take a few minutes)</div>
+      </div>`;
+    comicContent.innerHTML = html;
+    return;
+  }
+
+  // Error state
+  if (comic.status === 'error') {
+    html += `
+      <div class="comic-progress">
+        <div style="color:#ef4444">❌ Comic generation failed</div>
+        <div style="font-size:12px;margin-top:8px;color:var(--muted)">Try again once the image-gen service is running</div>
+      </div>`;
+    comicContent.innerHTML = html;
+    return;
+  }
+
+  // Progress bar (if generating)
+  if (comic.status === 'generating' && comic.total_panels > 0) {
+    const pct = Math.round((comic.generated_panels / comic.total_panels) * 100);
+    html += `
+      <div class="comic-progress">
+        <div>🎨 Generating panels... ${comic.generated_panels}/${comic.total_panels}</div>
+        <div class="comic-progress-bar"><div class="comic-progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+  } else if (comic.status === 'generating') {
+    html += `
+      <div class="comic-progress">
+        <div>🎨 Analyzing story and planning panels...</div>
+        <div class="comic-progress-bar"><div class="comic-progress-fill" style="width:15%"></div></div>
+      </div>`;
+  }
+
+  // Pages
+  (comic.pages || []).forEach(page => {
+    html += `<div class="comic-page">`;
+    if (page.title) {
+      html += `<div class="comic-page-title">${esc(page.title)}</div>`;
+    }
+    html += `<div class="comic-grid">`;
+
+    (page.panels || []).forEach(panel => {
+      const panelClass = panel.status === 'generating' ? 'generating' :
+                          panel.status === 'error' ? 'error' : '';
+      html += `<div class="comic-panel ${panelClass}">`;
+
+      // Image or placeholder
+      if (panel.image_url && panel.status === 'done') {
+        html += `<img class="comic-panel-image" src="/api${panel.image_url}" alt="${esc(panel.caption)}" loading="lazy"/>`;
+      } else if (panel.status === 'generating') {
+        html += `<div class="comic-panel-placeholder generating">
+          <div>🎨 Generating panel ${panel.panel_number}...<br/><small>${esc(panel.image_prompt.substring(0, 60))}...</small></div>
+        </div>`;
+      } else if (panel.status === 'error') {
+        html += `<div class="comic-panel-placeholder" style="background:#fee2e2;color:#991b1b">
+          <div>❌ Generation failed<br/><small>${esc(panel.error || 'Unknown error')}</small></div>
+        </div>`;
+      } else {
+        html += `<div class="comic-panel-placeholder">
+          <div>Panel ${panel.panel_number}<br/><small>Waiting...</small></div>
+        </div>`;
+      }
+
+      // Speech bubble
+      if (panel.dialogue) {
+        html += `<div class="comic-speech-bubble">"${esc(panel.dialogue)}"</div>`;
+      }
+
+      // Caption
+      if (panel.caption) {
+        const speakerColor = agentColor(panel.speaker);
+        html += `<div class="comic-panel-caption">
+          <strong style="color:${speakerColor}">${esc(displayName(panel.speaker))}</strong>: ${esc(panel.caption)}
+        </div>`;
+      }
+
+      html += `</div>`; // .comic-panel
+    });
+
+    html += `</div>`; // .comic-grid
+    html += `</div>`; // .comic-page
+  });
+
+  comicContent.innerHTML = html;
+
+  if (_activeTab === 'comic') {
+    comicFeed.scrollTop = comicFeed.scrollHeight;
+  }
+}
 </script>
 </body>
 </html>

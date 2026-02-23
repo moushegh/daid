@@ -162,6 +162,7 @@ services:
       - mcp-memory
       - mcp-git
       - mcp-time
+      - image-gen
     ports:
       - "8080:8080"
     volumes:
@@ -172,9 +173,37 @@ services:
       - ./memory:/memory
     environment:
       - OLLAMA_HOST=http://ollama:11434
+      - IMAGE_SERVICE_URL=http://image-gen:8090
     working_dir: /app
     command: >
       sh -c "pip install -q -r /app/requirements.txt &&
              pip install -q -r /app/web_requirements.txt &&
              python web_server.py"
+    restart: unless-stopped
+
+  image-gen:
+    image: python:3.11-slim
+    container_name: image-gen
+    runtime: nvidia
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./image-gen:/app
+      - ./images:/images
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - SD_MODEL=stabilityai/sdxl-turbo
+      - IMAGE_OUTPUT_DIR=/images
+      - HF_HOME=/app/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    working_dir: /app
+    command: >
+      sh -c "pip install -q torch --index-url https://download.pytorch.org/whl/cu121 &&
+             pip install -q -r /app/requirements.txt &&
+             python image_server.py"
     restart: unless-stopped

@@ -20085,6 +20085,1119 @@
       ],
       "result": null,
       "updated_at": "2026-02-22T20:35:42.651011+00:00"
+    },
+    "a9adb3b2": {
+      "game_id": "a9adb3b2",
+      "status": "completed",
+      "scene_id": 1,
+      "round": 7,
+      "turn_index": 4,
+      "state_version": 59,
+      "last_actor": "Shadow",
+      "next_actor": "Aldric",
+      "party": [
+        {
+          "name": "Thorin",
+          "char_class": "Fighter",
+          "race": "Dwarf",
+          "level": 3,
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 13,
+          "max_hp": 28,
+          "current_hp": 24,
+          "armor_class": 16,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Battleaxe"
+          ],
+          "spells": [],
+          "abilities": [
+            "Second Wind (heal 1d10+3, once per rest)",
+            "Action Surge (extra action, once per rest)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Explorer's pack",
+            "50ft rope"
+          ]
+        },
+        {
+          "name": "Elara",
+          "char_class": "Wizard",
+          "race": "Elf",
+          "level": 3,
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 17,
+          "wisdom": 13,
+          "charisma": 11,
+          "max_hp": 18,
+          "current_hp": 18,
+          "armor_class": 12,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Quarterstaff"
+          ],
+          "spells": [
+            "Fire Bolt",
+            "Magic Missile",
+            "Burning Hands",
+            "Shield"
+          ],
+          "abilities": [
+            "Arcane Recovery (recover 1 spell slot on short rest)"
+          ],
+          "inventory": [
+            "Spellbook",
+            "Component pouch",
+            "Scholar's pack"
+          ]
+        },
+        {
+          "name": "Shadow",
+          "char_class": "Rogue",
+          "race": "Halfling",
+          "level": 3,
+          "strength": 10,
+          "dexterity": 17,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 14,
+          "max_hp": 21,
+          "current_hp": 21,
+          "armor_class": 14,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Shortsword",
+            "Shortbow"
+          ],
+          "spells": [],
+          "abilities": [
+            "Sneak Attack (+2d6 damage when advantage or ally adjacent)",
+            "Cunning Action (Dash, Disengage, or Hide as bonus action)",
+            "Thieves' Tools proficiency"
+          ],
+          "inventory": [
+            "Leather armor",
+            "Thieves' tools",
+            "Burglar's pack",
+            "Daggers x3"
+          ]
+        },
+        {
+          "name": "Aldric",
+          "char_class": "Cleric",
+          "race": "Human",
+          "level": 3,
+          "strength": 14,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13,
+          "max_hp": 24,
+          "current_hp": 24,
+          "armor_class": 18,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Mace"
+          ],
+          "spells": [
+            "Sacred Flame",
+            "Cure Wounds",
+            "Guiding Bolt",
+            "Turn Undead",
+            "Healing Word"
+          ],
+          "abilities": [
+            "Channel Divinity: Turn Undead",
+            "Preserve Life (distribute healing among allies)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Holy symbol",
+            "Priest's pack"
+          ]
+        }
+      ],
+      "enemies": [
+        {
+          "name": "Skeleton Guard 1",
+          "char_class": "Undead",
+          "race": "Undead",
+          "level": 1,
+          "strength": 10,
+          "dexterity": 14,
+          "constitution": 15,
+          "intelligence": 6,
+          "wisdom": 8,
+          "charisma": 5,
+          "max_hp": 13,
+          "current_hp": 0,
+          "armor_class": 13,
+          "alive": false,
+          "incapacitated": true,
+          "conditions": [],
+          "is_player": false,
+          "weapons": [
+            "Rusty Sword"
+          ],
+          "spells": [],
+          "abilities": [],
+          "inventory": []
+        },
+        {
+          "name": "Skeleton Guard 2",
+          "char_class": "Undead",
+          "race": "Undead",
+          "level": 1,
+          "strength": 10,
+          "dexterity": 14,
+          "constitution": 15,
+          "intelligence": 6,
+          "wisdom": 8,
+          "charisma": 5,
+          "max_hp": 13,
+          "current_hp": 0,
+          "armor_class": 13,
+          "alive": false,
+          "incapacitated": true,
+          "conditions": [],
+          "is_player": false,
+          "weapons": [
+            "Rusty Sword"
+          ],
+          "spells": [],
+          "abilities": [],
+          "inventory": []
+        }
+      ],
+      "initiative_order": [
+        "Thorin",
+        "Elara",
+        "Shadow",
+        "Aldric"
+      ],
+      "flags": {
+        "adventure": "crypt_of_the_shadow_lord",
+        "scene_title": "Battle Against Skeletons"
+      },
+      "event_log": [
+        {
+          "type": "scene",
+          "scene_id": 1,
+          "scene_title": "Crypt Entrance",
+          "narration": "The party finds themselves standing at the entrance of the Crypt of the Shadow Lord.",
+          "timestamp": "2026-02-22T21:13:31.473471+00:00"
+        },
+        {
+          "type": "heal",
+          "target": "Thorin",
+          "amount": 10,
+          "source": "Thorin",
+          "reason": "Second Wind healing",
+          "remaining_hp": 28,
+          "timestamp": "2026-02-22T21:41:36.381101+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Thorin",
+          "amount": 6,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 22,
+          "timestamp": "2026-02-22T22:03:15.895021+00:00"
+        },
+        {
+          "actor": "Shadow",
+          "event_type": "examination",
+          "description": "Examined the dagger more closely, searching for clues.",
+          "timestamp": 1645495732463159
+        },
+        {
+          "actor": "Shadow",
+          "event_type": "deciphering",
+          "description": "Deciphered the meaning of the inscription ",
+          "timestamp": 1645495732463159
+        },
+        {
+          "actor": "Shadow",
+          "event_type": "attempted_banishment",
+          "description": "Attempted to banish the dagger",
+          "timestamp": 1645495732463159
+        },
+        {
+          "actor": "Aldric",
+          "event_type": "used_channel_divinity",
+          "description": "Used Channel Divinity: Turn Undead on the undead creatures.",
+          "timestamp": 1645495732463159
+        },
+        {
+          "actor": "Aldric",
+          "event_type": "examined_statue_base",
+          "description": "Examined the base of the silent king statue, looking for any clues.",
+          "timestamp": 1646493700
+        },
+        {
+          "type": "Action",
+          "detail": "Spellcasting",
+          "details": {
+            "note": "Casts Magic Missile at Skeleton Guard 1 and Skeleton Guard 2."
+          },
+          "timestamp": "2026-02-23T03:28:35.822394+00:00"
+        },
+        {
+          "type": "scene",
+          "scene_id": 1,
+          "scene_title": "Battle Against Skeletons",
+          "narration": "Thorin draws his Battleaxe and prepares for battle against the remaining skeletons.",
+          "timestamp": "2026-02-23T04:04:09.216575+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Thorin",
+          "amount": 7,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 15,
+          "timestamp": "2026-02-23T04:07:11.888793+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 1",
+          "amount": 8,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 5,
+          "timestamp": "2026-02-23T04:45:44.965699+00:00"
+        },
+        {
+          "type": "heal",
+          "target": "Thorin",
+          "amount": 9,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 24,
+          "timestamp": "2026-02-23T05:05:24.857500+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 2",
+          "amount": 10,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 3,
+          "timestamp": "2026-02-23T05:25:05.173372+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 2",
+          "amount": 10,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 0,
+          "timestamp": "2026-02-23T05:42:26.362587+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 1",
+          "amount": 4,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 1,
+          "timestamp": "2026-02-23T06:06:49.100256+00:00"
+        },
+        {
+          "type": "patch",
+          "reason": "initiative_order updated",
+          "patch": {
+            "initiative_order": [
+              "Thorin",
+              "Elara",
+              "Shadow",
+              "Aldric"
+            ]
+          },
+          "timestamp": "2026-02-23T06:13:11.873405+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 1",
+          "amount": 6,
+          "source": "",
+          "reason": "",
+          "remaining_hp": 0,
+          "timestamp": "2026-02-23T06:51:53.108812+00:00"
+        },
+        {
+          "type": "damage",
+          "target": "Skeleton Guard 1",
+          "amount": 8,
+          "source": "Shadow",
+          "reason": "Shadow's Sneak Attack",
+          "remaining_hp": 0,
+          "timestamp": "2026-02-23T07:41:08.635325+00:00"
+        },
+        {
+          "type": "heal",
+          "target": "Elara",
+          "amount": 19,
+          "source": "Aldric",
+          "reason": "Aldric's Healing Word",
+          "remaining_hp": 18,
+          "timestamp": "2026-02-23T07:59:22.855473+00:00"
+        },
+        {
+          "type": "action",
+          "detail": "Channel Divinity: Turn Undead",
+          "timestamp": "2026-02-23T08:19:30.230430+00:00"
+        },
+        {
+          "type": "attempt",
+          "detail": "Channel Divinity: Failed Turn Undead",
+          "timestamp": "2026-02-23T08:29:52.456080+00:00"
+        },
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Game cancelled by user.",
+          "timestamp": "2026-02-23T08:39:46.600727+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-23T08:39:46.600749+00:00"
+    },
+    "199103c1": {
+      "game_id": "199103c1",
+      "status": "completed",
+      "scene_id": 0,
+      "round": 1,
+      "turn_index": 0,
+      "state_version": 4,
+      "last_actor": "",
+      "next_actor": "DungeonMaster",
+      "party": [
+        {
+          "name": "Thorin",
+          "char_class": "Fighter",
+          "race": "Dwarf",
+          "level": 3,
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 13,
+          "max_hp": 28,
+          "current_hp": 28,
+          "armor_class": 16,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Battleaxe"
+          ],
+          "spells": [],
+          "abilities": [
+            "Second Wind (heal 1d10+3, once per rest)",
+            "Action Surge (extra action, once per rest)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Explorer's pack",
+            "50ft rope"
+          ]
+        },
+        {
+          "name": "Elara",
+          "char_class": "Wizard",
+          "race": "Elf",
+          "level": 3,
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 17,
+          "wisdom": 13,
+          "charisma": 11,
+          "max_hp": 18,
+          "current_hp": 18,
+          "armor_class": 12,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Quarterstaff"
+          ],
+          "spells": [
+            "Fire Bolt",
+            "Magic Missile",
+            "Burning Hands",
+            "Shield"
+          ],
+          "abilities": [
+            "Arcane Recovery (recover 1 spell slot on short rest)"
+          ],
+          "inventory": [
+            "Spellbook",
+            "Component pouch",
+            "Scholar's pack"
+          ]
+        },
+        {
+          "name": "Shadow",
+          "char_class": "Rogue",
+          "race": "Halfling",
+          "level": 3,
+          "strength": 10,
+          "dexterity": 17,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 14,
+          "max_hp": 21,
+          "current_hp": 21,
+          "armor_class": 14,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Shortsword",
+            "Shortbow"
+          ],
+          "spells": [],
+          "abilities": [
+            "Sneak Attack (+2d6 damage when advantage or ally adjacent)",
+            "Cunning Action (Dash, Disengage, or Hide as bonus action)",
+            "Thieves' Tools proficiency"
+          ],
+          "inventory": [
+            "Leather armor",
+            "Thieves' tools",
+            "Burglar's pack",
+            "Daggers x3"
+          ]
+        },
+        {
+          "name": "Aldric",
+          "char_class": "Cleric",
+          "race": "Human",
+          "level": 3,
+          "strength": 14,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13,
+          "max_hp": 24,
+          "current_hp": 24,
+          "armor_class": 18,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Mace"
+          ],
+          "spells": [
+            "Sacred Flame",
+            "Cure Wounds",
+            "Guiding Bolt",
+            "Turn Undead",
+            "Healing Word"
+          ],
+          "abilities": [
+            "Channel Divinity: Turn Undead",
+            "Preserve Life (distribute healing among allies)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Holy symbol",
+            "Priest's pack"
+          ]
+        }
+      ],
+      "enemies": [],
+      "initiative_order": [
+        "DungeonMaster",
+        "Thorin",
+        "Elara",
+        "Shadow",
+        "Aldric"
+      ],
+      "flags": {
+        "adventure": "crypt_of_the_shadow_lord",
+        "scene_title": "Crypt Entrance"
+      },
+      "event_log": [
+        {
+          "type": "scene",
+          "scene_id": 0,
+          "scene_title": "Crypt Entrance",
+          "narration": "The party stands before the entrance of the Crypt of the Shadow Lord.",
+          "timestamp": "2026-02-23T08:50:34.923919+00:00"
+        },
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Historical reconciliation: terminal game state aligned with task status 'interrupted'.",
+          "timestamp": "2026-02-23T08:58:12.883701+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-23T08:58:12.883720+00:00"
+    },
+    "de0702de": {
+      "game_id": "de0702de",
+      "status": "completed",
+      "scene_id": 0,
+      "round": 1,
+      "turn_index": 0,
+      "state_version": 2,
+      "last_actor": "",
+      "next_actor": "DungeonMaster",
+      "party": [
+        {
+          "name": "Thorin",
+          "char_class": "Fighter",
+          "race": "Dwarf",
+          "level": 3,
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 13,
+          "max_hp": 28,
+          "current_hp": 28,
+          "armor_class": 16,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Battleaxe"
+          ],
+          "spells": [],
+          "abilities": [
+            "Second Wind (heal 1d10+3, once per rest)",
+            "Action Surge (extra action, once per rest)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Explorer's pack",
+            "50ft rope"
+          ]
+        },
+        {
+          "name": "Elara",
+          "char_class": "Wizard",
+          "race": "Elf",
+          "level": 3,
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 17,
+          "wisdom": 13,
+          "charisma": 11,
+          "max_hp": 18,
+          "current_hp": 18,
+          "armor_class": 12,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Quarterstaff"
+          ],
+          "spells": [
+            "Fire Bolt",
+            "Magic Missile",
+            "Burning Hands",
+            "Shield"
+          ],
+          "abilities": [
+            "Arcane Recovery (recover 1 spell slot on short rest)"
+          ],
+          "inventory": [
+            "Spellbook",
+            "Component pouch",
+            "Scholar's pack"
+          ]
+        },
+        {
+          "name": "Shadow",
+          "char_class": "Rogue",
+          "race": "Halfling",
+          "level": 3,
+          "strength": 10,
+          "dexterity": 17,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 14,
+          "max_hp": 21,
+          "current_hp": 21,
+          "armor_class": 14,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Shortsword",
+            "Shortbow"
+          ],
+          "spells": [],
+          "abilities": [
+            "Sneak Attack (+2d6 damage when advantage or ally adjacent)",
+            "Cunning Action (Dash, Disengage, or Hide as bonus action)",
+            "Thieves' Tools proficiency"
+          ],
+          "inventory": [
+            "Leather armor",
+            "Thieves' tools",
+            "Burglar's pack",
+            "Daggers x3"
+          ]
+        },
+        {
+          "name": "Aldric",
+          "char_class": "Cleric",
+          "race": "Human",
+          "level": 3,
+          "strength": 14,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13,
+          "max_hp": 24,
+          "current_hp": 24,
+          "armor_class": 18,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Mace"
+          ],
+          "spells": [
+            "Sacred Flame",
+            "Cure Wounds",
+            "Guiding Bolt",
+            "Turn Undead",
+            "Healing Word"
+          ],
+          "abilities": [
+            "Channel Divinity: Turn Undead",
+            "Preserve Life (distribute healing among allies)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Holy symbol",
+            "Priest's pack"
+          ]
+        }
+      ],
+      "enemies": [],
+      "initiative_order": [
+        "DungeonMaster",
+        "Thorin",
+        "Elara",
+        "Shadow",
+        "Aldric"
+      ],
+      "flags": {
+        "adventure": "crypt_of_the_shadow_lord"
+      },
+      "event_log": [
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Game cancelled by user.",
+          "timestamp": "2026-02-23T10:13:38.282024+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-23T10:13:38.282048+00:00"
+    },
+    "88c6de0b": {
+      "game_id": "88c6de0b",
+      "status": "completed",
+      "scene_id": 0,
+      "round": 1,
+      "turn_index": 0,
+      "state_version": 2,
+      "last_actor": "",
+      "next_actor": "DungeonMaster",
+      "party": [
+        {
+          "name": "Thorin",
+          "char_class": "Fighter",
+          "race": "Dwarf",
+          "level": 3,
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 13,
+          "max_hp": 28,
+          "current_hp": 28,
+          "armor_class": 16,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Battleaxe"
+          ],
+          "spells": [],
+          "abilities": [
+            "Second Wind (heal 1d10+3, once per rest)",
+            "Action Surge (extra action, once per rest)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Explorer's pack",
+            "50ft rope"
+          ]
+        },
+        {
+          "name": "Elara",
+          "char_class": "Wizard",
+          "race": "Elf",
+          "level": 3,
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 17,
+          "wisdom": 13,
+          "charisma": 11,
+          "max_hp": 18,
+          "current_hp": 18,
+          "armor_class": 12,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Quarterstaff"
+          ],
+          "spells": [
+            "Fire Bolt",
+            "Magic Missile",
+            "Burning Hands",
+            "Shield"
+          ],
+          "abilities": [
+            "Arcane Recovery (recover 1 spell slot on short rest)"
+          ],
+          "inventory": [
+            "Spellbook",
+            "Component pouch",
+            "Scholar's pack"
+          ]
+        },
+        {
+          "name": "Shadow",
+          "char_class": "Rogue",
+          "race": "Halfling",
+          "level": 3,
+          "strength": 10,
+          "dexterity": 17,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 14,
+          "max_hp": 21,
+          "current_hp": 21,
+          "armor_class": 14,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Shortsword",
+            "Shortbow"
+          ],
+          "spells": [],
+          "abilities": [
+            "Sneak Attack (+2d6 damage when advantage or ally adjacent)",
+            "Cunning Action (Dash, Disengage, or Hide as bonus action)",
+            "Thieves' Tools proficiency"
+          ],
+          "inventory": [
+            "Leather armor",
+            "Thieves' tools",
+            "Burglar's pack",
+            "Daggers x3"
+          ]
+        },
+        {
+          "name": "Aldric",
+          "char_class": "Cleric",
+          "race": "Human",
+          "level": 3,
+          "strength": 14,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13,
+          "max_hp": 24,
+          "current_hp": 24,
+          "armor_class": 18,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Mace"
+          ],
+          "spells": [
+            "Sacred Flame",
+            "Cure Wounds",
+            "Guiding Bolt",
+            "Turn Undead",
+            "Healing Word"
+          ],
+          "abilities": [
+            "Channel Divinity: Turn Undead",
+            "Preserve Life (distribute healing among allies)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Holy symbol",
+            "Priest's pack"
+          ]
+        }
+      ],
+      "enemies": [],
+      "initiative_order": [
+        "DungeonMaster",
+        "Thorin",
+        "Elara",
+        "Shadow",
+        "Aldric"
+      ],
+      "flags": {
+        "adventure": "crypt_of_the_shadow_lord"
+      },
+      "event_log": [
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Game cancelled by user.",
+          "timestamp": "2026-02-23T10:13:38.369234+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-23T10:13:38.369256+00:00"
+    },
+    "3ea033ff": {
+      "game_id": "3ea033ff",
+      "status": "completed",
+      "scene_id": 0,
+      "round": 1,
+      "turn_index": 0,
+      "state_version": 2,
+      "last_actor": "",
+      "next_actor": "DungeonMaster",
+      "party": [
+        {
+          "name": "Thorin",
+          "char_class": "Fighter",
+          "race": "Dwarf",
+          "level": 3,
+          "strength": 16,
+          "dexterity": 12,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 13,
+          "max_hp": 28,
+          "current_hp": 28,
+          "armor_class": 16,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Battleaxe"
+          ],
+          "spells": [],
+          "abilities": [
+            "Second Wind (heal 1d10+3, once per rest)",
+            "Action Surge (extra action, once per rest)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Explorer's pack",
+            "50ft rope"
+          ]
+        },
+        {
+          "name": "Elara",
+          "char_class": "Wizard",
+          "race": "Elf",
+          "level": 3,
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 17,
+          "wisdom": 13,
+          "charisma": 11,
+          "max_hp": 18,
+          "current_hp": 18,
+          "armor_class": 12,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Quarterstaff"
+          ],
+          "spells": [
+            "Fire Bolt",
+            "Magic Missile",
+            "Burning Hands",
+            "Shield"
+          ],
+          "abilities": [
+            "Arcane Recovery (recover 1 spell slot on short rest)"
+          ],
+          "inventory": [
+            "Spellbook",
+            "Component pouch",
+            "Scholar's pack"
+          ]
+        },
+        {
+          "name": "Shadow",
+          "char_class": "Rogue",
+          "race": "Halfling",
+          "level": 3,
+          "strength": 10,
+          "dexterity": 17,
+          "constitution": 12,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 14,
+          "max_hp": 21,
+          "current_hp": 21,
+          "armor_class": 14,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Shortsword",
+            "Shortbow"
+          ],
+          "spells": [],
+          "abilities": [
+            "Sneak Attack (+2d6 damage when advantage or ally adjacent)",
+            "Cunning Action (Dash, Disengage, or Hide as bonus action)",
+            "Thieves' Tools proficiency"
+          ],
+          "inventory": [
+            "Leather armor",
+            "Thieves' tools",
+            "Burglar's pack",
+            "Daggers x3"
+          ]
+        },
+        {
+          "name": "Aldric",
+          "char_class": "Cleric",
+          "race": "Human",
+          "level": 3,
+          "strength": 14,
+          "dexterity": 10,
+          "constitution": 14,
+          "intelligence": 12,
+          "wisdom": 16,
+          "charisma": 13,
+          "max_hp": 24,
+          "current_hp": 24,
+          "armor_class": 18,
+          "alive": true,
+          "incapacitated": false,
+          "conditions": [],
+          "is_player": true,
+          "weapons": [
+            "Mace"
+          ],
+          "spells": [
+            "Sacred Flame",
+            "Cure Wounds",
+            "Guiding Bolt",
+            "Turn Undead",
+            "Healing Word"
+          ],
+          "abilities": [
+            "Channel Divinity: Turn Undead",
+            "Preserve Life (distribute healing among allies)"
+          ],
+          "inventory": [
+            "Chain mail",
+            "Shield",
+            "Holy symbol",
+            "Priest's pack"
+          ]
+        }
+      ],
+      "enemies": [],
+      "initiative_order": [
+        "DungeonMaster",
+        "Thorin",
+        "Elara",
+        "Shadow",
+        "Aldric"
+      ],
+      "flags": {
+        "adventure": "crypt_of_the_shadow_lord"
+      },
+      "event_log": [
+        {
+          "type": "game_over",
+          "result": "DEFEAT",
+          "summary": "Game cancelled by user.",
+          "timestamp": "2026-02-23T10:13:38.458223+00:00"
+        }
+      ],
+      "result": "DEFEAT",
+      "updated_at": "2026-02-23T10:13:38.458240+00:00"
     }
   }
 }

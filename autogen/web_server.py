@@ -93,7 +93,10 @@ class AgentTask:
 
 
 _tasks: Dict[str, AgentTask] = {}
+_comics: Dict[str, dict] = {}          # comic_id → comic dict
+_task_comics: Dict[str, str] = {}      # task_id → comic_id mapping
 _GAME_STATE_FILE = "/memory/game_state.json"
+_COMIC_OUTPUT_DIR = "/images"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -440,13 +443,22 @@ async def create_task(req: TaskRequest):
     return task.to_dict()
 
 
+class GameStartRequest(BaseModel):
+    mode: str = "story"     # "story" | "comic"
+    comic_style: str = "comic"  # comic | manga | fantasy | realistic | watercolor
+
+
 @app.post("/api/game/start", status_code=201)
-async def start_game():
+async def start_game(req: GameStartRequest = GameStartRequest()):
     task_id = str(uuid.uuid4())[:8]
-    task = AgentTask(task_id, "D&D Adventure: Autonomous Run")
+    mode_label = "Comic" if req.mode == "comic" else "Story"
+    task = AgentTask(task_id, f"D&D Adventure: Autonomous Run ({mode_label} Mode)")
     _tasks[task_id] = task
     _persist_tasks()
     task._asyncio_task = asyncio.create_task(_run_dnd_game(task))
+    # If comic mode, auto-generate comic after game finishes
+    if req.mode == "comic":
+        asyncio.create_task(_auto_generate_comic_on_finish(task, req.comic_style))
     return task.to_dict()
 
 
@@ -599,6 +611,210 @@ async def delete_task(task_id: str):
     if task_id not in _tasks:
         raise HTTPException(404, "task not found")
     del _tasks[task_id]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Comic Mode endpoints
+# ──────────────────────────────────────────────────────────────────────────────
+
+class ComicRequest(BaseModel):
+    style: str = "comic"  # comic | manga | fantasy | realistic | watercolor
+
+
+def _safe_queue_put(task: AgentTask, msg: dict):
+    """Best-effort put to task queue — won't fail if queue is full or closed."""
+    try:
+        task.queue.put_nowait(msg)
+    except Exception:
+        pass
+
+
+async def _auto_generate_comic_on_finish(task: AgentTask, style: str = "comic"):
+    """Wait for a game task to finish, then auto-generate the comic."""
+    # Poll until task finishes
+    while task.status in ("pending", "running"):
+        await asyncio.sleep(5)
+    # Only generate if game completed successfully
+    if task.status == "completed" and task.game_id:
+        await _do_generate_comic(task, style)
+
+
+async def _do_generate_comic(task: AgentTask, style: str = "comic"):
+    """Generate comic from a completed (or running) game task."""
+    from comic_generator import ComicGenerator
+
+    generator = ComicGenerator(style=style)
+
+    # Create a tracking entry immediately so status endpoint returns something
+    tracking_id = f"pending-{task.id}"
+    _task_comics[task.id] = tracking_id
+    _comics[tracking_id] = {
+        "comic_id": tracking_id,
+        "game_id": task.game_id or "",
+        "title": "The Crypt of the Shadow Lord",
+        "pages": [],
+        "status": "waiting",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "style": style,
+        "total_panels": 0,
+        "generated_panels": 0,
+    }
+
+    # Wait up to 120s for image service to become available
+    available = False
+    for attempt in range(24):
+        available = await generator.check_image_service()
+        if available:
+            break
+        print(f"[comic] Image service not available, retry {attempt+1}/24...")
+        _comics[tracking_id]["status"] = "waiting_for_service"
+        _safe_queue_put(task, {
+            "type": "comic_progress",
+            "name": "System",
+            "content": f"Waiting for image generation service... (attempt {attempt+1})",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+        await asyncio.sleep(5)
+
+    if not available:
+        print(f"[comic] Image generation service not available after retries")
+        _comics[tracking_id]["status"] = "error"
+        _safe_queue_put(task, {
+            "type": "comic_error",
+            "name": "System",
+            "content": "Comic generation failed: Image service not available. Start the image-gen container.",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+        await generator.close()
+        return
+
+    # Progress callback: push updates to the SSE stream
+    async def on_progress(comic):
+        _comics[comic.comic_id] = comic.to_dict()
+        _task_comics[task.id] = comic.comic_id
+        # Clean up the old tracking entry
+        if tracking_id in _comics and tracking_id != comic.comic_id:
+            del _comics[tracking_id]
+        _safe_queue_put(task, {
+            "type": "comic_progress",
+            "name": "System",
+            "content": f"Comic: {comic.generated_panels}/{comic.total_panels} panels generated ({comic.status})",
+            "comic_id": comic.comic_id,
+            "status": comic.status,
+            "generated": comic.generated_panels,
+            "total": comic.total_panels,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+
+    try:
+        comic = await generator.generate_comic(
+            messages=task.messages,
+            game_id=task.game_id or "",
+            progress_callback=on_progress,
+        )
+        _comics[comic.comic_id] = comic.to_dict()
+        _task_comics[task.id] = comic.comic_id
+        # Clean up tracking entry
+        if tracking_id in _comics and tracking_id != comic.comic_id:
+            del _comics[tracking_id]
+
+        _safe_queue_put(task, {
+            "type": "comic_done",
+            "name": "System",
+            "content": f"Comic generated! {comic.generated_panels} panels ready.",
+            "comic_id": comic.comic_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception as exc:
+        print(f"[comic] Generation failed: {exc}")
+        _comics[tracking_id]["status"] = "error"
+        _safe_queue_put(task, {
+            "type": "comic_error",
+            "name": "System",
+            "content": f"Comic generation failed: {exc}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+    finally:
+        await generator.close()
+
+
+@app.post("/api/game/{task_id}/comic", status_code=201)
+async def generate_comic(task_id: str, req: ComicRequest = ComicRequest()):
+    """Generate a comic from a game's story messages (can be called during or after game)."""
+    if task_id not in _tasks:
+        raise HTTPException(404, "task not found")
+    task = _tasks[task_id]
+    if not task.messages:
+        raise HTTPException(400, "No story messages available yet")
+
+    # Start generation in background
+    asyncio.create_task(_do_generate_comic(task, req.style))
+
+    return {
+        "task_id": task_id,
+        "status": "generating",
+        "message": "Comic generation started. Check /api/game/{task_id}/comic/status for progress.",
+    }
+
+
+@app.get("/api/game/{task_id}/comic/status")
+async def get_comic_status(task_id: str):
+    """Get the status and data of a comic being generated."""
+    if task_id not in _tasks:
+        raise HTTPException(404, "task not found")
+
+    comic_id = _task_comics.get(task_id)
+    if not comic_id or comic_id not in _comics:
+        return {
+            "task_id": task_id,
+            "status": "not_started",
+            "comic": None,
+        }
+
+    return {
+        "task_id": task_id,
+        "status": _comics[comic_id].get("status", "unknown"),
+        "comic": _comics[comic_id],
+    }
+
+
+@app.get("/api/comic/{comic_id}")
+async def get_comic(comic_id: str):
+    """Get a comic by its ID."""
+    if comic_id not in _comics:
+        raise HTTPException(404, "comic not found")
+    return _comics[comic_id]
+
+
+@app.get("/api/comic/image-service/health")
+async def check_image_service():
+    """Check if the image generation service is available."""
+    from comic_generator import ComicGenerator
+    generator = ComicGenerator()
+    available = await generator.check_image_service()
+    await generator.close()
+    return {"available": available}
+
+
+# Proxy image requests to the image generation service
+@app.get("/api/images/{filename}")
+async def proxy_image(filename: str):
+    """Proxy image requests to the image generation service."""
+    import httpx
+    image_service_url = os.environ.get("IMAGE_SERVICE_URL", "http://image-gen:8090")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{image_service_url}/images/{filename}")
+            if resp.status_code == 200:
+                from fastapi.responses import Response
+                return Response(
+                    content=resp.content,
+                    media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=86400"},
+                )
+            raise HTTPException(resp.status_code, "Image not found")
+    except httpx.ConnectError:
+        raise HTTPException(503, "Image service unavailable")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
